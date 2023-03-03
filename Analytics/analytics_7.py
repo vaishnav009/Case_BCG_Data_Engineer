@@ -1,4 +1,4 @@
-"""Handler file for Analytics 8"""
+"""Handler file for Analytics 7"""
 from Config.helper import DataReader as DR
 from pyspark.sql.functions import col, row_number, monotonically_increasing_id
 from pyspark.sql.window import Window

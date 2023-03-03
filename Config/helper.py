@@ -9,6 +9,7 @@ class DataReader():
 
     @classmethod
     def read_data_from(cls, file_name: str):
+        """Reads the csv data into DF and returns it."""
         if file_name:
             file_loc = cls._get_file_loc_for(file_name)
             data_df = spark.read.options(inferSchema = True, header = True).csv(file_loc)
@@ -18,6 +19,7 @@ class DataReader():
     
     @classmethod
     def _get_file_loc_for(cls, file_name: str):
+        """Stores the location of all the file and returns the location of required ones."""
         loc_map = {
                     "Charges": "Data/Charges_use.csv",
                     "Damages": "Data/Damages_use.csv",
@@ -33,7 +35,8 @@ class DataReader():
         return location
     
     @classmethod
-    def get_input_analytics(cls, input_file = "Input_Analytics"):
+    def get_input_analytics(cls):
+        """Returns the list of Analytics numbers to run the application for."""
         file_loc = 'Data/Input_Analytics.csv'
         input_df = spark.read.csv(file_loc)
         return list(input_df.first())
