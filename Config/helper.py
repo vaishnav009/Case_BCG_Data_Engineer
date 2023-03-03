@@ -2,6 +2,8 @@
 from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("BCG_Case_Project").getOrCreate()
 
+spark.sparkContext.setLogLevel("ERROR")
+
 
 class DataReader():
 
