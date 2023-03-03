@@ -9,6 +9,8 @@ def get_analytics():
     units_df = DR.read_data_from(file_name = "Units")
     units_df = units_df.filter(units_df.VEH_MAKE_ID != 'NA')
 
+    units_df = units_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR'])
+
     units_df = units_df.groupby(units_df.VEH_MAKE_ID).sum('TOT_INJRY_CNT','DEATH_CNT')
     units_df = units_df.withColumnRenamed("sum(TOT_INJRY_CNT)", "Sum_Injuries").withColumnRenamed("sum(DEATH_CNT)", "Sum_Deaths")
     units_df = units_df.withColumn('Total', col('Sum_Injuries')+col('Sum_Deaths'))

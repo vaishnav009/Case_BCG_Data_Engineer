@@ -8,7 +8,7 @@ def get_analytics():
     person_df = DR.read_data_from(file_name = "Primary_Person")
 
     person_df = person_df.filter(person_df.DRVR_ZIP.isNotNull())
-    person_df = person_df.drop_duplicates(['CRASH_ID'])
+    person_df = person_df.drop_duplicates(['CRASH_ID', 'UNIT_NBR', 'PRSN_NBR'])
 
     person_df = person_df.filter(person_df.PRSN_ALC_RSLT_ID == 'Positive')
     

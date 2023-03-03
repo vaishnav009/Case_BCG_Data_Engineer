@@ -11,6 +11,7 @@ def get_analytics():
 
     units_df = units_df.filter(units_df.VEH_BODY_STYL_ID != 'NA')
     units_df = units_df.filter(units_df.VEH_BODY_STYL_ID != 'NOT REPORTED')
+    units_df = units_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR'])
 
     person_df = person_df.join(units_df, (person_df.CRASH_ID == units_df.CRASH_ID) & (person_df.UNIT_NBR == units_df.UNIT_NBR),\
                             'inner').\

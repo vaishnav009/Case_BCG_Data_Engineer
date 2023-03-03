@@ -7,6 +7,7 @@ from pyspark.sql.window import Window
 def  _get_prop_damages_df():
     """Returns th DF for crashes where No property damage was reported"""
     damages_df = DR.read_data_from(file_name = "Damages")
+    damages_df  = damages_df.dropDuplicates(['CRASH_ID'])
     prop_damages_df = damages_df.filter(damages_df.DAMAGED_PROPERTY.contains('NO DAMAGE'))
     return prop_damages_df
 
@@ -14,6 +15,8 @@ def  _get_prop_damages_df():
 def _get_vehicle_damage_df():
     """Returns the DF for crahses where vehicles have damages_SCL > 4"""
     units_df = DR.read_data_from(file_name = "Units")
+    units_df = units_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR'])
+
     vehicle_damage_df = units_df.filter((units_df.VEH_DMAG_SCL_1_ID == 'DAMAGED 7 HIGHEST') | \
                                         (units_df.VEH_DMAG_SCL_1_ID == 'DAMAGED 6') | \
                                         (units_df.VEH_DMAG_SCL_1_ID == 'DAMAGED 5') | \
@@ -28,6 +31,7 @@ def _get_vehicle_damage_df():
 def _get_insured_vehicle_df():
     """Returns the DF for crashes where vehicles had insurance"""
     units_df = DR.read_data_from(file_name = "Units")
+    units_df = units_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR'])
     insured_vehicle_df = units_df.filter( units_df.FIN_RESP_TYPE_ID.contains('INSURANCE')) \
         .select(units_df.CRASH_ID, units_df.UNIT_NBR)
     return insured_vehicle_df
@@ -39,6 +43,8 @@ def get_analytics():
     prop_damages_df = _get_prop_damages_df()
     vehicle_damage_df = _get_vehicle_damage_df()
     insured_vehicle_df = _get_insured_vehicle_df()
+
+    units_df = units_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR'])
 
     units_df = units_df.join(prop_damages_df, units_df.CRASH_ID == prop_damages_df.CRASH_ID , 'inner') \
                             .select(units_df.CRASH_ID, units_df.UNIT_NBR, prop_damages_df.DAMAGED_PROPERTY)
@@ -53,4 +59,4 @@ def get_analytics():
 
     print('Distinct Crash IDs where No Damaged Property was observed and Damage Level (VEH_DMAG_SCL~) \
            is above 4 and car avails Insurance :-')
-    units_df.drop_duplicates(['CRASH_ID']).select('CRASH_ID').show()
+    units_df.select('CRASH_ID').show()

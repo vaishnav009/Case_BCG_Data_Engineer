@@ -9,9 +9,13 @@ def _get_speed_related_charges_df():
     charges_df = DR.read_data_from(file_name = "Charges")
     person_df = DR.read_data_from(file_name = "Primary_Person")
 
+    charges_df = charges_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR', 'PRSN_NBR'])
+    person_df = person_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR', 'PRSN_NBR'])
+
     person_df = person_df.filter(person_df.PRSN_TYPE_ID.contains('DRIVER'))
-    person_df = person_df.join(charges_df, (person_df.CRASH_ID == charges_df.CRASH_ID) & (person_df.UNIT_NBR == charges_df.UNIT_NBR),\
-                           'inner').select(charges_df.CRASH_ID,charges_df.UNIT_NBR, charges_df.CHARGE)
+    person_df = person_df.join(charges_df, (person_df.CRASH_ID == charges_df.CRASH_ID) & (person_df.UNIT_NBR == charges_df.UNIT_NBR) &\
+                           (person_df.PRSN_NBR == charges_df.PRSN_NBR),'inner') \
+                            .select(charges_df.CRASH_ID,charges_df.UNIT_NBR, charges_df.CHARGE)
     
     speed_related_charges_df = person_df.filter(person_df.CHARGE.contains('SPEED'))
     return speed_related_charges_df
@@ -20,6 +24,7 @@ def _get_speed_related_charges_df():
 def _get_driver_has_lic_df():
     """Returns the DF for drivers who have driving License"""
     person_df = DR.read_data_from(file_name = "Primary_Person")
+    person_df = person_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR', 'PRSN_NBR'])
 
     person_df = person_df.filter((person_df.DRVR_LIC_CLS_ID !='NA') & (person_df.DRVR_LIC_CLS_ID !='UNKNOWN') & (person_df.DRVR_LIC_CLS_ID !='UNLICENSED') )
     
@@ -30,6 +35,7 @@ def _get_driver_has_lic_df():
 def _get_top_ten_colors_crashed_df():
     """Returns the DF for top 10 colors involved in crashes"""
     units_df = DR.read_data_from(file_name = "Units")
+    
     units_df = units_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR'])
     units_df = units_df.filter(units_df.VEH_COLOR_ID != 'NA')
 
@@ -50,7 +56,7 @@ def _get_top_25_states_with_crashes_df():
     person_df = person_df.filter(person_df.DRVR_LIC_STATE_ID != 'NA')
     person_df = person_df.filter(person_df.DRVR_LIC_STATE_ID != 'Unknown')
     person_df = person_df.filter(person_df.DRVR_LIC_STATE_ID != 'Other')
-    person_df = person_df.drop_duplicates(['CRASH_ID'])
+    person_df = person_df.drop_duplicates(['CRASH_ID', 'UNIT_NBR', 'PRSN_NBR'])
 
     person_df = person_df.groupby(person_df.DRVR_LIC_STATE_ID).count().withColumnRenamed("count", "Total_Crashes")
     person_df = person_df.orderBy(col('Total_Crashes').desc())
@@ -71,8 +77,10 @@ def get_analytics():
 
     units_df = DR.read_data_from(file_name = "Units")
     person_df = DR.read_data_from(file_name = "Primary_Person")
+
+    person_df = person_df.dropDuplicates(['CRASH_ID', 'UNIT_NBR', 'PRSN_NBR'])
     units_df = units_df.filter(units_df.VIN.isNotNull())
-    units_df = units_df.drop_duplicates(['VIN'])
+    units_df = units_df.drop_duplicates(['CRASH_ID', 'UNIT_NBR'])
 
     units_df = units_df.join(person_df, (person_df.CRASH_ID==units_df.CRASH_ID) & (person_df.UNIT_NBR==units_df.UNIT_NBR), 'inner') \
         .select(units_df.CRASH_ID, units_df.UNIT_NBR, units_df.VEH_MAKE_ID, units_df.VEH_COLOR_ID,  person_df.DRVR_LIC_STATE_ID)
